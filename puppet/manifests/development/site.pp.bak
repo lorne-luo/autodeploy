@@ -1,0 +1,95 @@
+node default{
+
+}
+
+node 'cnkaradev-it.hz.rem.cn.se.com'{
+
+        file { "C:\\test":
+                 ensure => "directory",
+        }
+}
+
+
+node 'cnemoptestapp1.hz.rem.cn.se.com'{
+
+        file { "C:\\test":
+                 ensure => "directory",
+        }
+}
+
+node 'cnemoptestfab1.hz.rem.cn.se.com'{
+
+        file { "C:\\test":
+                 ensure => "directory",
+        }
+}
+
+node 'cnemoptestweb1.hz.rem.cn.se.com'{
+
+        file { "C:\\test":
+                 ensure => "directory",
+        }
+}
+
+node 'test.puppet.com'{
+
+        file { 'C:\\AutoDeploy':
+                 ensure => directory,
+        }
+
+        file {'C:\\AutoDeploy\\test.exe':
+                source => 'puppet:///libs/test.exe',
+                ensure => present,
+				mode =>777,
+                require => File['C:\\AutoDeploy'],
+        }
+
+        exec { 'TestCommand':
+                command => 'C:\\AutoDeploy\\test.exe',
+                require => File['C:\\AutoDeploy\\test.exe'],
+				logoutput => true,
+        }
+}
+
+
+node 'neil-pc.ad.cn.schneider-electric.com'{
+
+	file { "c:\\test":
+		 ensure => "directory",
+	}
+	
+	file { 'c:\\test\\a.txt':
+   		content => 'this is for testing puppet client',
+		require => File['c:\\test']
+	}
+
+	exec { 'TestCommand':      
+		command => 'C:\\test\\test.exe c:\\test\\b.txt',
+		require => File['c:\\test\\a.txt']
+	}
+}
+
+$sp_id = 123
+$sp_folder = 'c:\\test'
+$db_name = 'demo_db'
+$db_user = 'dbuser'
+$db_pwd = 'dbpwd'
+$ftp_down_pwd = 'downpwd'
+$ftp_up_pwd = 'uppwd'
+$ftp_folder = 'c:\\ftpfolder'
+$import_folder = 'c:\\dataimport'
+
+$package = 'Jazz_v1.3.0.19.zip'
+
+node 'puppettest.puppet.com'{
+
+	file { 'c:\\b.txt':
+   		content => 'this is for testing puppet client',
+	}
+
+	class { "autodeployall": 
+		package_filename => 'Jazz_v1.3.0.19.zip', config_filename => 'config__v1.3.0.19.config'
+	}
+	
+}
+

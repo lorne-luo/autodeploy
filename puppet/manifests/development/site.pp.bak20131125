@@ -1,0 +1,66 @@
+node default{
+
+}
+
+node 'cnkaradev-it.hz.rem.cn.se.com'{
+
+        file { "C:\\test":
+                 ensure => "directory",
+        }
+}
+
+
+node 'cnemoptestapp1.hz.rem.cn.se.com'{
+        
+#	class {"autodeployall":
+#		package_filename => 'Jazz_IR_v1.4.0.4.zip', config_filename => 'test_sp1_upgrade_v1.4.0.3_v1.4.0.4.xml', component_name => 'APP DI'
+#	}
+}
+
+node 'cnemoptestfab1.hz.rem.cn.se.com'{
+
+        file { "C:\\test":
+                 ensure => "directory",
+        }
+}
+
+node 'cnemoptestweb1.hz.rem.cn.se.com'{
+
+#       class {"autodeployall":
+#		package_filename => 'Jazz_IR_v1.4.0.4.zip', config_filename => 'test_sp1_upgrade_v1.4.0.3_v1.4.0.4.xml', component_name => 'WEB'
+#	}
+
+}
+
+node 'test.puppet.com'{
+
+        file { 'C:\\AutoDeploy':
+                 ensure => directory,
+        }
+
+        file {'C:\\AutoDeploy\\test.exe':
+                source => 'puppet:///libs/test.exe',
+                ensure => present,
+				mode =>777,
+                require => File['C:\\AutoDeploy'],
+        }
+
+        exec { 'TestCommand':
+                command => 'C:\\AutoDeploy\\test.exe',
+                require => File['C:\\AutoDeploy\\test.exe'],
+				logoutput => true,
+        }
+}
+
+
+#node 'puppettest.puppet.com'{
+#
+#	file { 'c:\\b.txt':
+#   		content => 'this is for testing puppet client',
+#	}
+#
+#	class { "autodeployall": 
+#		package_filename => 'Jazz_v1.3.0.19.zip', config_filename => 'config__v1.3.0.19.config'
+#	}	
+#}
+

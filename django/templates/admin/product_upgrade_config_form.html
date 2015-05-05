@@ -1,0 +1,137 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls admin_static admin_modify %}
+
+{% block extrahead %}{{ block.super }}
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+{{ media }}
+{% endblock %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />{% endblock %}
+
+{% block coltype %}colM{% endblock %}
+
+{% block bodyclass %}{{ opts.app_label }}-{{ opts.object_name.lower }} change-form{% endblock %}
+
+{% if not is_popup %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ app_label|capfirst|escape }}</a>
+&rsaquo; {% if has_change_permission %}<a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>{% else %}{{ opts.verbose_name_plural|capfirst }}{% endif %}
+&rsaquo; {% if add %}{% trans 'Add' %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}
+</div>
+{% endblock %}
+{% endif %}
+
+{% block content %}<div id="content-main">
+{% block object-tools %}
+{% if change %}{% if not is_popup %}
+  <ul class="object-tools">
+    {% block object-tools-items %}
+    <!--
+    <li>
+        {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+        <a href="{% add_preserved_filters history_url %}" class="historylink">{% trans "History" %}</a>
+    </li>
+    -->
+    {% if has_absolute_url %}<li><a href="{% url 'admin:view_on_site' content_type_id original.pk %}" class="viewsitelink">{% trans "View on site" %}</a></li>{% endif%}
+    {% endblock %}
+  </ul>
+{% endif %}{% endif %}
+{% endblock %}
+<form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form">{% csrf_token %}{% block form_top %}{% endblock %}
+<div>
+{% if is_popup %}<input type="hidden" name="_popup" value="1" />{% endif %}
+
+{% if errors %}
+    <p class="errornote">
+    {% if errors|length == 1 %}{% trans "Please correct the error below." %}{% else %}{% trans "Please correct the errors below." %}{% endif %}
+    </p>
+    {{ adminform.form.non_field_errors }}
+{% endif %}
+
+{% block field_sets %}
+{% for fieldset in adminform %}
+
+    {% include "admin/includes/fieldset.html" %}
+{% endfor %}
+{% endblock %}
+
+{% block after_field_sets %}{% endblock %}
+
+{% block inline_field_sets %}
+{% for inline_admin_formset in inline_admin_formsets %}
+    {% include inline_admin_formset.opts.template %}
+{% endfor %}
+{% endblock %}
+
+{% block after_related_objects %}{% endblock %}
+
+
+
+
+{% if deployment_config %}
+<br/>
+
+<input type='hidden' name='service_provider_id' value='{{ service_provider_id }}' />
+<input type='hidden' name='product_version_id' value='{{ product_version_id }}' />
+<input type='hidden' name='environment' value='{{ environment }}' />
+<input type='hidden' name='product_deploy_id' value='{{ product_deploy_id }}' />
+<input type='hidden' name='new_product_version_id' value='{{ new_product_version_id }}' />
+
+<p><b>Configure for follwing component : </b></p>
+{% for  component in  deployment_config %}
+ <div class="module aligned">
+<table style="width:100%;margin-top: 5px">
+    <tr>
+        <td colspan="2"><h4>[{{ component.component.id }}]{{ component.component.name }}_{{ product_version }} {% if deployment_config %}{{ deploy.former_component_version }}{% endif %}</h4></td>
+    </tr>
+    <tr>
+        <td>
+        <h4 for="id_server">Server:</h4>
+        </td>
+        <td>
+        <select multiple="multiple" id="id_server" name="server_{{ component.component.id }}" style="width:200px;" size ="6">
+            {% for  server in  component.server %}
+                {% ifequal server.description 'selected' %}
+                    <option value="{{ server.id }}" selected="selected">{{ server }}</option>
+                {% else %}
+                    <option value="{{ server.id }}">{{ server }}</option>
+                {% endifequal %}
+            {% endfor %}
+        </select>
+        hold on CTRL to select more than one
+            <a href="/admin/environment/server/add/" class="add-another" id="add_id_server" onclick="return showAddAnotherPopup(this);"> <img src="/static/admin/img/icon_addlink.gif" width="10" height="10" alt="Add Another"/></a>
+        </td>
+    </tr>
+    {% for  item in  component.configs %}
+    <tr>
+        <td>
+            <h4>{{ item.key_name }}:</h4>
+        </td>
+        <td style="width:95%;">
+            <input class="vTextField" name="config_{{ item.id }}" maxlength="200" type="text" value="{{ item.value }}" />
+        </td>
+    </tr>
+    {% endfor %}
+
+</table>
+</div>
+{% endfor %}
+{% endif %}
+<br/>
+
+<div class="submit-row">
+<input type="submit" value="Upgrade" class="default" name="_save" />
+</div>
+
+{% if adminform.first_field and add %}
+   <script type="text/javascript">document.getElementById("{{ adminform.first_field.id_for_label }}").focus();</script>
+{% endif %}
+
+{# JavaScript for prepopulated fields #}
+{% prepopulated_fields_js %}
+
+</div>
+</form></div>
+{% endblock %}
